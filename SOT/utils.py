@@ -44,7 +44,7 @@ def torch_to_img(img):
     return img
 
 
-def get_subwindow_tracking(im, pos, model_sz, original_sz, avg_chans, out_mode='torch', new=False):
+def get_subwindow_tracking(im, pos, model_sz, original_sz, avg_chans, out_mode='torch'):
 
     if isinstance(pos, float):
         pos = [pos, pos]
