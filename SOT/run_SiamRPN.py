@@ -143,9 +143,9 @@ def SiamRPN_init(im, target_pos, target_sz, net):
     net.temple(z.cuda())
 
     if p.windowing == 'cosine':
-        window = np.outer(np.hanning(p.score_size), np.hanning(p.score_size))
+        window = np.outer(np.hanning(int(p.score_size)), np.hanning(int(p.score_size)))
     elif p.windowing == 'uniform':
-        window = np.ones((p.score_size, p.score_size))
+        window = np.ones((int(p.score_size), int(p.score_size)))
     window = np.tile(window.flatten(), p.anchor_num)
 
     state['p'] = p
