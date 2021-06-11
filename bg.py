@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+
 import cv2
-import numpy as np
 
 #tasks = ['./aic19-track3-test-data', './aic19-track3-train-data']
 
