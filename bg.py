@@ -1,31 +1,32 @@
 # -*- coding: utf-8 -*-
-import os
+import argparse
+import itertools
+import pathlib
 
 import cv2
 
-#tasks = ['./aic19-track3-test-data', './aic19-track3-train-data']
+from SOT.utils import natural_keys
 
-tasks = ['./aic19-track3-test-videos']
 
-for t in tasks:
-    name = 'test' if 'test' in t else 'train'
-    save_bg_path = name + '_bg_imgs'
-    save_fg_path = name + '_fg_imgs'
-    if not os.path.exists(save_bg_path):
-        os.mkdir(save_bg_path)
-        os.mkdir(save_fg_path)
+parser = argparse.ArgumentParser(description='This program produces background and foreground frames for every video.')
+parser.add_argument('video_path', help='Directory with the MP4 or AVI videos.', type=pathlib.Path)
+video_path: pathlib.Path = parser.parse_args().video_path
 
-    path = os.path.join(t, 'videos')
-    videos = os.listdir(path)
+if video_path.is_dir():
+    save_bg_path = video_path.with_name(video_path.stem + '_bg_imgs')
+    save_fg_path = video_path.with_name(video_path.stem + '_fg_imgs')
+
+    #path = os.path.join(t, 'videos')
+    #videos: typing.Generator[pathlib.Path] = video_path.glob("*.mp4")
+    videos = sorted(itertools.chain(video_path.glob('*.avi'), video_path.glob('*.mp4')), key=natural_keys)
 
     for v in videos:
-        v_name = os.path.join(path, v)
-        print("Now for {}".format(v_name))
-        save_bg_path_ = os.path.join(save_bg_path, v.split('.')[0])
-        save_fg_path_ = os.path.join(save_fg_path, v.split('.')[0])
-        if not os.path.exists(save_bg_path_):
-            os.mkdir(save_bg_path_)
-            os.mkdir(save_fg_path_)
+        v_name = str(v)
+        print("Now for {}".format(v.name))
+        save_bg_path_ = save_bg_path/v.stem
+        save_fg_path_ = save_fg_path/v.stem
+        save_fg_path_.mkdir(parents=True, exist_ok=True)
+        save_bg_path_.mkdir(parents=True, exist_ok=True)
         cap = cv2.VideoCapture(v_name)
 
         bg = cv2.createBackgroundSubtractorMOG2()
@@ -44,11 +45,15 @@ for t in tasks:
             #fg_img_rgb = np.expand_dims(fg_img, axis=2)
             #fg_img_rgb = np.concatenate((fg_img, fg_img, fg_img), axis=-1)
             #fg_writer.write(fg_img_rgb)
-            cv2.imwrite(os.path.join(save_fg_path_, '{}.png'.format(count)), fg_img)
+            filename = save_fg_path_/'{}.png'.format(count)
+            cv2.imwrite(str(filename), fg_img)
             bg_img = bg.getBackgroundImage()
             #if count%30==0:
-            cv2.imwrite(os.path.join(save_bg_path_,'{}.png'.format(count)), bg_img)
+            filename = save_bg_path_ / '{}.png'.format(count)
+            cv2.imwrite(filename, bg_img)
             ret, frame = cap.read()
             count += 1
         cap.release()
         #fg_writer.release()
+else:
+    raise ValueError("The video_path is not a directory.")
