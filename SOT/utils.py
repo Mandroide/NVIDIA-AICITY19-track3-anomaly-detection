@@ -3,6 +3,10 @@
 # Licensed under The MIT License
 # Written by Qiang Wang (wangqiang2015 at ia.ac.cn)
 # --------------------------------------------------------
+import pathlib
+import re
+from typing import List, Union
+
 import cv2
 import torch
 import numpy as np
@@ -45,7 +49,6 @@ def torch_to_img(img):
 
 
 def get_subwindow_tracking(im, pos, model_sz, original_sz, avg_chans, out_mode='torch'):
-
     if isinstance(pos, float):
         pos = [pos, pos]
     sz = original_sz
@@ -91,11 +94,11 @@ def get_subwindow_tracking(im, pos, model_sz, original_sz, avg_chans, out_mode='
 
 
 def cxy_wh_2_rect(pos, sz):
-    return np.array([pos[0]-sz[0]/2, pos[1]-sz[1]/2, sz[0], sz[1]])  # 0-index
+    return np.array([pos[0] - sz[0] / 2, pos[1] - sz[1] / 2, sz[0], sz[1]])  # 0-index
 
 
 def rect_2_cxy_wh(rect):
-    return np.array([rect[0]+rect[2]/2, rect[1]+rect[3]/2]), np.array([rect[2], rect[3]])  # 0-index
+    return np.array([rect[0] + rect[2] / 2, rect[1] + rect[3] / 2]), np.array([rect[2], rect[3]])  # 0-index
 
 
 def get_axis_aligned_bbox(region):
@@ -116,3 +119,25 @@ def get_axis_aligned_bbox(region):
     w = s * (x2 - x1) + 1
     h = s * (y2 - y1) + 1
     return cx, cy, w, h
+
+
+def natural_keys(path: pathlib.Path) -> List[Union[int, str]]:
+    """Sort path names by its cardinal numbers.
+
+    Parameters
+    ----------
+    path : pathlib.Path
+      The element to be sorted.
+    """
+
+    def atoi(c: str) -> Union[int, str]:
+        """Try to convert a character to an int if possible.
+
+        Parameters
+        ----------
+        c : str
+          The character to check if it's int.
+        """
+        return int(c) if c.isdigit() else c
+
+    return [atoi(c) for c in re.split('(\d+)', path.stem)]
